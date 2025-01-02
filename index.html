@@ -49,8 +49,6 @@
     </main>
 
     
-//  Add this before the closing </body> tag
-
 <script>
   const FormExtension = {
     name: 'Forms',
@@ -66,7 +64,7 @@
             font-size: 0.8em;
             color: #888;
           }
-          input[type="text"], input[type="email"], input[type="tel"] {
+          input[type="text"], input[type="email"] {
             width: 100%;
             border: none;
             border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
@@ -92,64 +90,70 @@
         <label for="name">Name</label>
         <input type="text" class="name" name="name" required><br><br>
 
-        <label for="phone">Phone Number</label>
-        <input type="tel" class="phone" name="phone" required pattern="\\+?[0-9\\- ]+" title="Invalid phone number"><br><br>
-
-        <label for="email">Work Email</label>
+        <label for="email">Email</label>
         <input type="email" class="email" name="email" required pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}$" title="Invalid email address"><br><br>
-
-        <label for="company">Company Name</label>
-        <input type="text" class="company" name="company" required><br><br>
 
         <input type="submit" class="submit" value="Submit">
       `;
+
+      formContainer.addEventListener('input', function () {
+        const name = formContainer.querySelector('.name');
+        const email = formContainer.querySelector('.email');
+
+        if (name.checkValidity()) name.classList.remove('invalid');
+        if (email.checkValidity()) email.classList.remove('invalid');
+      });
 
       formContainer.addEventListener('submit', function (event) {
         event.preventDefault();
 
         const name = formContainer.querySelector('.name');
-        const phone = formContainer.querySelector('.phone');
         const email = formContainer.querySelector('.email');
-        const company = formContainer.querySelector('.company');
+
+        if (!name.checkValidity() || !email.checkValidity()) {
+          name.classList.add('invalid');
+          email.classList.add('invalid');
+          return;
+        }
+
+        formContainer.querySelector('.submit').remove();
 
         window.voiceflow.chat.interact({
           type: 'complete',
-          payload: {
-            name: name.value,
-            phone: phone.value,
-            email: email.value,
-            company: company.value,
-          },
+          payload: { name: name.value, email: email.value },
         });
       });
 
       element.appendChild(formContainer);
     },
   };
-
-  // Load the embedded chat widget
-  (function (d, t) {
-    var v = d.createElement(t),
-      s = d.getElementsByTagName(t)[0];
-    v.onload = function () {
-      window.voiceflow.chat.load({
-        verify: { projectID: '675cb8a7bdfd5f757ce98441' },
-        url: 'https://general-runtime.voiceflow.com',
-        versionID: 'production',
-        render: {
-          mode: 'embedded',
-          target: document.getElementById('flat-chat'),
-        },
-        autostart: true,
-        assistant: { extensions: [FormExtension] },
-      });
-    };
-    v.src = 'https://cdn.voiceflow.com/widget/bundle.mjs';
-    v.type = 'text/javascript';
-    s.parentNode.insertBefore(v, s);
-  })(document, 'script');
 </script>
 
+<script type="text/javascript">
+  (function(d, t) {
+      var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      v.onload = function() {
+        window.voiceflow.chat.load({
+          verify: { projectID: '675c453caa96e0b18d9ea366' },
+          url: 'https://general-runtime.voiceflow.com',
+          versionID: 'production',
+          assistant: {
+            extensions: [FormExtension]
+          }
+        }).then(() => {
+          // Set up proactive message
+          window.voiceflow.chat.proactive.clear();
+          window.voiceflow.chat.proactive.push({ 
+            type: 'text', 
+            payload: { message: 'Hi there! Need help?' }
+          });
+       });
+      };
+      v.src = "https://cdn.voiceflow.com/widget/bundle.mjs"; 
+      v.type = "text/javascript"; 
+      s.parentNode.insertBefore(v, s);
+  })(document, 'script');
+</script>
 
 </body>
 </html>
